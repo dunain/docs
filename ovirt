@@ -1,0 +1,3 @@
+yum install http://resources.ovirt.org/pub/yum-repo/ovirt-release35.rpm
+
+yum -y install ovirt-engine

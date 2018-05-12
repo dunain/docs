@@ -1,0 +1,19 @@
+# effacer des index contenant des shard non repliqués (brutal)
+for i in `curl -XGET http://172.16.33.54:9200/_cat/shards | grep -i UNASSIGNED  | awk '{ print $1}' | sort -u`; do curl -XDELETE http://172.16.33.54:9200/$i; done
+
+# lister les index
+curl 'http://172.16.33.54:9200/_cat/indices?v'
+
+# effacer les index datant de 2015
+for i in `curl 'http://172.16.33.54:9200/_cat/indices?v' | awk '{ print $3}' | grep 2015`; do curl -XDELETE http://172.16.33.54:9200/$i; done
+
+
+
+# kopf web interface
+
+# pour installer 
+root@datagraph01 14:46:43 ~}/usr/share/elasticsearch/bin/plugin install lmenezes/elasticsearch-kopf/2.0
+
+# pour consulter
+
+http://172.16.33.54:9200/_plugin/kopf/#!/cluster

@@ -1,0 +1,88 @@
+##lister les images
+docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+registry            2.0                 3b34ad1544ad        32 hours ago        548.6 MB
+
+# effacer une image de la registry
+docker rmi shipyard/deploy
+Untagged: shipyard/deploy:latest
+Deleted: ba94b7a205d699e140d71292e5ec45432c0b5c379b3b4b344ca155acae50473a
+Deleted: a4cad84004398a90a814fc4a6b882a4ccc5cf61f2e75cdc6e408aa54b6dc178b
+Deleted: 44f41fc5a600be3d651ba4164e8d1a699f307f61cc93d8a348fa33902d49c6e0
+
+
+##lancer une registry en locale
+docker run -p 5000:5000 registry:2.0 &
+
+## pour qu'elle redemarre en meme temps que le daemon docker
+docker run -d --restart=always -p 5000:5000 registry:2.0 &
+
+##lancer une image docker 
+docker run -d -i    debian:wheezy /bin/bash
+
+##lister les images docker qui tournent
+root@docker01 10:57:26 ~}docker ps
+CONTAINER ID        IMAGE               COMMAND                CREATED             STATUS              PORTS                    NAMES
+bedfcfc73d95        debian:wheezy       "/bin/bash"            2 seconds ago       Up 1 seconds                                 naughty_ptolemy    
+325fa2f82c7b        registry:2.0        "registry cmd/regist   10 minutes ago      Up 10 minutes       0.0.0.0:5000->5000/tcp   cocky_rosalind      
+
+
+#pour voir tous les containers, meme ceux qui ne tournent pas
+
+docker ps -a
+
+##lancer une machine avec un nom particulier
+## -d pour detach -i pour interactif -t pour attacher un pseudo tty
+docker run -d -i -t  --name cfdoc_v1  debian:wheezy /bin/bash
+puis
+docker ps
+CONTAINER ID        IMAGE               COMMAND                CREATED             STATUS              PORTS                    NAMES
+c620bc698d41        debian:wheezy       "/bin/bash"            1 seconds ago       Up 1 seconds                                 cfdoc_v1            
+bedfcfc73d95        debian:wheezy       "/bin/bash"            2 minutes ago       Up 2 minutes                                 naughty_ptolemy     
+325fa2f82c7b        registry:2.0        "registry cmd/regist   12 minutes ago      Up 12 minutes       0.0.0.0:5000->5000/tcp   cocky_rosalind      
+
+##lancer un shell dans un docker qui tourne
+docker exec -i -t dreamy_curie /bin/bash
+
+
+## pour se detacher d'un attach sur une image docker
+# il faut FAIRE CTRL+P CTRL+Q
+
+
+## pour enregistrer une image qui tourne en temps que image au niveau de la registry
+# -a pour author
+docker commit -a jyc 9be1dfdc0017 cf/doc:v1
+
+## installer swarm 
+docker run swarm
+
+## pour lancer un swarm en master/slave 
+docker run --restart=always -d -p 4000:4000 swarm manage -H :4000 --replication --advertise 172.16.34.44:4000 consul://172.16.34.43:8500
+## on le lance aussi la machine qui fera replicat : l'ip du advertise doit etre celle de la machine qui lance le processus
+#par exemple, pour 
+docker run --restart=always -d -p 4000:4000 swarm manage -H :4000 --replication --advertise 172.16.34.43:4000 consul://172.16.34.43:8500
+
+## pour joindre un cluster swarm pour une simple machine docker
+docker run --restart=always -d swarm join --advertise=172.16.34.49:2375 consul://172.16.34.43:8500
+
+## c'est le consul qui fait le boulot de synchroniser tout ca.
+
+## pour effacer un container
+docker rm nom_du_container
+
+## pour lancer un container consul
+docker run -d -p 8500:8500 --name=consul progrium/consul -server -bootstrap
+
+## pour creer un reseau en overlay sur une cluster swarm
+docker network create --driver overlay --subnet=192.168.0.0/24 my-net
+#pour cela, il faut que le daemon docker soit lancé avec les options 
+#DOCKER_OPTS="-H 172.16.34.46:2375 -H unix:///var/run/docker.sock --cluster-store=consul://172.16.34.45:8500 --cluster-advertise=eth0:2376"
+
+
+## pour creer un reseau en overlay sur un cluster swarm 
+docker network create -d overlay swarm_network2
+
+## pour lister les reseau disponible sur les machine du cluster 
+docker network ls
+
+

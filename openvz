@@ -1,0 +1,43 @@
+
+http://denisrosenkranz.com/tuto-virtualisation-installation-et-configuration-dopenvz-sous-debian-7/
+
+OpenVZ est une solution de virtualisation de niveau système d’exploitation basée sur le noyau Linux. OpenVZ permet à un serveur physique d’exécuter de multiples instances de systèmes d’exploitation isolés, qualifiées de serveurs privés virtuels (VPS) ou environnements virtuels (VE).
+
+A l’instar des solutions de virtualisation classique l’installation d’un système d’exploitation ne se fait pas avec un CD d’installation ou un fichier ISO, la mise en place d’un VPS se fait par le biais de « template » d’OS disponible directement sur le site d’OpenVZ à l’adresse suivante:
+
+http://openvz.org/Download/template/cache
+
+
+
+Console Access
+
+Attempting to connect to the console will typically result in a blank screen with a cursor that does not respond to input.
+
+To setup console access we first need to connect to the proxmox host. We can do this via ssh or by using the web shell provided in the web interface.
+
+Connect to the container with
+
+# vzctl enter 105
+
+where 105 is the container number you created earlier.
+
+from here we need to edit /etc/init/tty1.conf.
+
+# vi /etc/init/tty1.conf
+
+modify the file to match
+
+# tty1 - getty
+#
+# This service maintains a getty on tty1 from the point the system is
+# started until it is shut down again.
+
+start on stopped rc RUNLEVEL=[2345]
+stop on runlevel [!2345]
+
+respawn
+exec /sbin/getty -8 38400 tty1
+
+reboot the container by issuing the reboot command. Make sure you are still connected to the template and your not going to reboot your server. Or just stop and start the container from the web interface.
+
+You should now be able to access a prompt by connecting to the console. You may have to hit return on first connect.
