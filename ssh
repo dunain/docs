@@ -1,0 +1,18 @@
+astuce ssh
+----------
+
+pour passer un bastion ssh, pour se connecter sur une machine distante, hors reseau, avec un navigateur, facon drac quoi.
+
+sous root
+sur le poste client :
+ssh -D bastion_distant port_local
+configurer le navigateur pour utiliser un proxy sock sur 127.0.0.1 sur le port_local
+
+sur le navigateur, taper sur l'url de la machine distante par exemple :
+https://ip_de_la_drac:443
+
+et ca devrait marcher.
+
+
+
+
