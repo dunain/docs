@@ -1,0 +1,42 @@
+alias sysnet='export AWS_PROFILE=sysnet'
+alias staging='export AWS_PROFILE=staging'
+alias prod='export AWS_PROFILE=prod'
+alias pp='export AWS_PROFILE=pp'
+alias dev='export AWS_PROFILE=dev'
+alias su='su -'
+export CSHEDIT=vi
+
+
+export AWS_PROFILE=staging
+
+function aws_prompt {
+    case $AWS_PROFILE in
+        *prod)
+            local AWSCOLOR='\001\e[1;97m\e[41m\002'
+            ;;
+        pp)
+            local AWSCOLOR='\001\e[1;97m\e[48;5;208m\002'
+            ;;
+        dev)
+            local AWSCOLOR='\001\e[1;30m\e[48;5;11m\002'
+            ;;
+        test)
+            local AWSCOLOR='\001\e[1;30m\e[48;5;11m\002'
+            ;;
+        *)
+            local AWSCOLOR='\001\e[1;97m\e[42m\002'
+            ;;
+    esac
+    if [ -z $AWS_PROFILE ];
+    then
+        export PS1="\u@\h:\w}"
+    else
+        export PS1="$AWSCOLOR$(echo $AWS_PROFILE )\001\e[0m\002 \[$(ppwd)\]\u@\h: \w }"
+    fi
+}
+export PROMPT_COMMAND="aws_prompt"
+
+
+function aserver(){
+    aws ec2 describe-instances --filters "Name=tag:site,Values=$1" "Name=tag:type,Values=$2" | grep 'PRIVATEIPADDRESSES' | awk '{print $4}' |xargs cssh 
+}
